@@ -1,8 +1,12 @@
-import { execSync } from "child_process";
+import { exec } from "child_process";
+import { promisify } from "util";
 
-export function getGitDiff(): string {
+const execPromise = promisify(exec);
+
+export async function getGitDiff(): Promise<string> {
   try {
-    return execSync("git diff").toString();
+    const { stdout } = await execPromise("git diff");
+    return stdout;
   } catch (err) {
     return "";
   }
