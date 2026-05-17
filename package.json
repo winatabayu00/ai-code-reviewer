@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node src/index.ts",
     "review": "ts-node src/index.ts",
+    "review:v2": "ts-node src/index-v2.ts",
     "commit": "ts-node src/commit.ts"
   },
   "keywords": [],
