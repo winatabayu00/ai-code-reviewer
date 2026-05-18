@@ -1,6 +1,6 @@
 // src/modeling/nvidia/nemotron-3-nano-omni-free/adapter.ts
-import { ModelAdapter } from "../../base";
-import type { APIRequest, APIResponse } from "../../../types";
+import { ModelAdapter } from '../../base';
+import type { APIRequest, APIResponse } from '../../../types';
 
 function extractJSONFromText(text: string): string {
   const firstBrace = text.indexOf('{');
@@ -21,19 +21,13 @@ function extractJSONFromText(text: string): string {
   if (lastValid === -1) return "";
 
   let jsonStr = text.substring(firstBrace, lastValid + 1);
-  // Bersihkan trailing commas
   jsonStr = jsonStr.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-
-  if (!jsonStr.includes('"decision"') && !jsonStr.includes('"issues"')) {
-    return "";
-  }
-
   return jsonStr;
 }
 
 export class OpenAiGptOs120bFreeAdapter implements ModelAdapter {
-  readonly provider = "nvidia" as const;
-  readonly modelName = "openai/gpt-oss-120b:free"; // pastikan model ini
+  readonly provider = "openai" as const;
+  readonly modelName = "openai/gpt-oss-120b:free";
 
   buildRequest(systemPrompt: string, userContent: string): APIRequest {
     return {
@@ -48,38 +42,7 @@ export class OpenAiGptOs120bFreeAdapter implements ModelAdapter {
   }
 
   extractContent(response: APIResponse): string {
-    // Ambil dari content dulu (disini JSON seharusnya)
-    console.log(response.choices?.[0]);
-    let content = response.choices?.[0]?.message?.content || "";
-    if (content && content.trim().length > 0) {
-      if (content.includes('{')) {
-        const jsonPart = extractJSONFromText(content);
-        if (jsonPart) return jsonPart;
-      }
-      return content;
-    }
-
-    // Jika content kosong/pendek, coba reasoning
-    content = response.choices?.[0]?.message?.reasoning || "";
-    if (content && content.includes('{')) {
-      const jsonPart = extractJSONFromText(content);
-      if (jsonPart) return jsonPart;
-      return content;
-    }
-
-    // Fallback: cari di semua field
-    const fullMessage = response.choices?.[0]?.message as any;
-    if (fullMessage && typeof fullMessage === 'object') {
-      for (const key of Object.keys(fullMessage)) {
-        const val = fullMessage[key];
-        if (typeof val === 'string' && val.includes('{')) {
-          const jsonPart = extractJSONFromText(val);
-          if (jsonPart) return jsonPart;
-          return val;
-        }
-      }
-    }
-    return "";
+    return response.choices?.[0]?.message?.content || "";
   }
 
   getAPIEndpoint(): string {
