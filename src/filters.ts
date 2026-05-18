@@ -80,9 +80,18 @@ export function filterNoiseLines(diff: string): string {
 
 /**
  * Kombinasi filter: file + konten garis
+ * Juga limit ukuran diff agar tidak kepotong
  */
 export function filterFullDiff(diff: string): string {
   let filtered = filterDiffByFile(diff);
   filtered = filterNoiseLines(filtered);
+
+  // Limit: jika diff terlalu besar, truncate
+  const MAX_DIFF_SIZE = 8000;
+  if (filtered.length > MAX_DIFF_SIZE) {
+    console.log(`⚠️ Diff size ${filtered.length} chars exceeds limit ${MAX_DIFF_SIZE}, truncating...`);
+    filtered = filtered.substring(0, MAX_DIFF_SIZE) + "\n... (truncated)";
+  }
+
   return filtered;
 }

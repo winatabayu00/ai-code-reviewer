@@ -1,5 +1,7 @@
+// src/reviewer.ts
 import axios from "axios";
 import dotenv from "dotenv";
+import { CODE_REVIEW_V1_PROMPT } from "./prompts";
 
 dotenv.config();
 
@@ -17,33 +19,13 @@ export async function reviewCode(diff: string): Promise<ReviewResult> {
   const res = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
-      model: "deepseek/deepseek-chat", // ✅ perbaiki model name
+      model: process.env.AI_MODEL_TYPE,
       temperature: 0,
-      max_tokens: 1500, // ✅ cukup untuk diff sedang + output JSON
+      max_tokens: 1500,
       messages: [
         {
           role: "system",
-          content: `
-You are a Senior Staff Engineer doing REAL code review.
-
-Rules:
-- Ignore .env keys unless exposed in code (not diff)
-- Only flag issues that are production-relevant
-- Do NOT comment on intentional renames in diff unless harmful
-- Be strict but realistic
-- Avoid generic advice
-
-Output ONLY valid JSON (no extra text before or after):
-{
-  "decision": "APPROVE | REJECT",
-  "issues": [
-    {
-      "type": "architecture | readability | naming | complexity | maintainability",
-      "description": "specific explanation tied to code diff"
-    }
-  ]
-}
-          `,
+          content: CODE_REVIEW_V1_PROMPT,
         },
         {
           role: "user",
